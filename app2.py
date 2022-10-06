@@ -29,34 +29,22 @@ def gen_frames():
         if not success:
             break
         else:
-            classes = {1 :"apple_red_delicious", 0: "apple_braeburn", 2: "banana", 3: "grapes", 4:"others"}
+            classes = {0 : "apple_braeburn", 1: "apple_red_delicious", 2: "banana", 3: "grapes", 4: "others"}
             # object = []
             # image = Image.fromarray(frame).convert('RGB')
             # ##Converting image into tensor
             # image_tensor = read_tensor_from_readed_frame(image ,224, 224)
             input_frame = cv2.resize(frame, (224,224))
             input_frame = ((np.expand_dims(input_frame, 0).astype(np.float32))/127.0)-1
-            # input_frame = input_frame * 255
-            # input_frame = input_frame.astype(np.uint8)
             #Test model
             interpreter.set_tensor(input_details[0]['index'], input_frame)
             interpreter.invoke()
-            
-            res = []
-            for i in range(4):
-                res.append(interpreter.get_tensor(output_details[i]['index']))
-                
-            result_index = []
-            for j in res[0][0]:
-                if j>=0.5:
-                    result_index.append(list(res[0][0]).index(j))
-            		
-            result = {}
-            for idx in result_index:
-                result[classes[res[3][0][idx]]] = res[0][0][idx]
-            
-            print(result)
-            # frame = cv2.putText(frame, f'Object(s) detected: {result.keys}', (15,20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,0,0), 1) 
+            output_data = interpreter.get_tensor(output_details[0]['index'])
+            output_data = output_data[0]*100
+            print(output_data)
+            object_out = classes[np.argmax(output_data)]
+            frame = cv2.putText(frame, f'Object(s) detected: {object_out}', (15,20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,255), 1) 
+            # cv2.putText(image, text, org, font, fontScale, color[, thickness[, lineType[, bottomLeftOrigin]]])
             ret, buffer = cv2.imencode('.jpg', frame)
             
             frame = buffer.tobytes()
@@ -76,45 +64,3 @@ def video_feed():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-
-
-    '''
-for ip camera use - rtsp://username:password@ip_address:554/user=username_password='password'_channel=channel_number_stream=0.sdp' 
-for local webcam use cv2.VideoCapture(0)
-'''
-
-
-"""
-from keras.models import load_model
-from PIL import Image, ImageOps
-import numpy as np
-
-# Load the model
-model = load_model('keras_model.h5')
-
-# Create the array of the right shape to feed into the keras model
-# The 'length' or number of images you can put into the array is
-# determined by the first position in the shape tuple, in this case 1.
-data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
-# Replace this with the path to your image
-image = Image.open('<IMAGE_PATH>')
-#resize the image to a 224x224 with the same strategy as in TM2:
-#resizing the image to be at least 224x224 and then cropping from the center
-size = (224, 224)
-image = ImageOps.fit(image, size, Image.ANTIALIAS)
-
-#turn the image into a numpy array
-image_array = np.asarray(image)
-# Normalize the image
-normalized_image_array = (image_array.astype(np.float32) / 127.0) - 1
-# Load the image into the array
-data[0] = normalized_image_array
-
-# run the inference
-prediction = model.predict(data)
-print(prediction)
-
-
-"""
