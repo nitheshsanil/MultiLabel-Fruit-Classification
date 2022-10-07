@@ -1,6 +1,6 @@
-tensorflow                   2.9.1
-numpy                        1.23.0
-keras                        2.9.0
-Pillow                       9.2.0
-Flask                        2.2.2
-python-opencv                1.0.0.14
+tensorflow=2.9.1
+numpy=1.23.0
+keras=2.9.0
+Pillow=9.2.0
+Flask=2.2.2
+python-opencv=1.0.0.14
