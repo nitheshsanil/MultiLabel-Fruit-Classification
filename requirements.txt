@@ -3,4 +3,3 @@ numpy
 keras
 Pillow
 Flask
-python-opencv
